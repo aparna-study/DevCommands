@@ -27,17 +27,6 @@ Now On the node where sqoop is installed
 Warning: /usr/lib/hcatalog does not exist! HCatalog jobs will fail.
 Please set $HCAT_HOME to the root of your HCatalog installation.
 Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
-Please set $ACCUMULO_HOME to the root of your Accumulo installation.
-+======================================================================+
-| Error: JAVA_HOME is not set and Java could not be found |
-+----------------------------------------------------------------------+
-| Please download the latest Sun JDK from the Sun Java web site |
-| > http://java.sun.com/javase/downloads/ < |
-| |
-| HBase requires Java 1.6 or later. |
-| NOTE: This script will find Sun Java whether you install using the |
-| binary or the RPM based installer. |
-+======================================================================+
 15/10/19 12:09:22 INFO sqoop.Sqoop: Running Sqoop version: 1.4.3-cdh4.7.1
 15/10/19 12:09:22 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
 15/10/19 12:09:22 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
