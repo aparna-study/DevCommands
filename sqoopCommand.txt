@@ -1,0 +1,217 @@
+Create database and tables for testing purpose :
+
+mysql> create table studentDetail(
+-> stId int PRIMARY KEY,
+-> stName varchar(40),
+-> stAddress varchar(70));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO studentDetail (stId, stName, stAddress) VALUES (1,'suvarna' 'sunnyvale');
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+mysql> INSERT INTO studentDetail (stId, stName, stAddress) VALUES (1,'suvarna' ,'sunnyvale');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> INSERT INTO studentDetail (stId, stName, stAddress) VALUES (2,'Apurva' ,'sunnyvale');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> INSERT INTO studentDetail (stId, stName, stAddress) VALUES (3,'Anushka' ,'santa clara');
+Query OK, 1 row affected (0.00 sec)
+
+mysql>
+
+grant all privileges to sqoop/<any user name> user to this database on mysql node
+
+Now On the node where sqoop is installed 
+
+[root@snn2 ~]# sudo -su hdfs sqoop import --connect jdbc:mysql://hiveserver2-metastore.mydomain.net/studentInfo --username sqoop --password sqoop --table studentDetail --m 1
+Warning: /usr/lib/hcatalog does not exist! HCatalog jobs will fail.
+Please set $HCAT_HOME to the root of your HCatalog installation.
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
++======================================================================+
+| Error: JAVA_HOME is not set and Java could not be found |
++----------------------------------------------------------------------+
+| Please download the latest Sun JDK from the Sun Java web site |
+| > http://java.sun.com/javase/downloads/ < |
+| |
+| HBase requires Java 1.6 or later. |
+| NOTE: This script will find Sun Java whether you install using the |
+| binary or the RPM based installer. |
++======================================================================+
+15/10/19 12:09:22 INFO sqoop.Sqoop: Running Sqoop version: 1.4.3-cdh4.7.1
+15/10/19 12:09:22 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+15/10/19 12:09:22 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+15/10/19 12:09:22 INFO tool.CodeGenTool: Beginning code generation
+15/10/19 12:09:23 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `studentDetail` AS t LIMIT 1
+15/10/19 12:09:23 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `studentDetail` AS t LIMIT 1
+15/10/19 12:09:23 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/lib/hadoop-0.20-mapreduce
+Note: /tmp/sqoop-hdfs/compile/a4bf83ecfb016f94f20b09cc3f212695/studentDetail.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+15/10/19 12:09:27 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-hdfs/compile/a4bf83ecfb016f94f20b09cc3f212695/studentDetail.jar
+15/10/19 12:09:27 WARN manager.MySQLManager: It looks like you are importing from mysql.
+15/10/19 12:09:27 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+15/10/19 12:09:27 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+15/10/19 12:09:27 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+15/10/19 12:09:27 INFO mapreduce.ImportJobBase: Beginning import of studentDetail
+15/10/19 12:09:30 WARN mapred.JobClient: Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
+15/10/19 12:09:33 INFO mapred.JobClient: Running job: job_201510190012_0001
+15/10/19 12:09:34 INFO mapred.JobClient: map 0% reduce 0%
+15/10/19 12:09:56 INFO mapred.JobClient: map 100% reduce 0%
+15/10/19 12:10:01 INFO mapred.JobClient: Job complete: job_201510190012_0001
+15/10/19 12:10:01 INFO mapred.JobClient: Counters: 23
+15/10/19 12:10:01 INFO mapred.JobClient: File System Counters
+15/10/19 12:10:01 INFO mapred.JobClient: FILE: Number of bytes read=0
+15/10/19 12:10:01 INFO mapred.JobClient: FILE: Number of bytes written=198036
+15/10/19 12:10:01 INFO mapred.JobClient: FILE: Number of read operations=0
+15/10/19 12:10:01 INFO mapred.JobClient: FILE: Number of large read operations=0
+15/10/19 12:10:01 INFO mapred.JobClient: FILE: Number of write operations=0
+15/10/19 12:10:01 INFO mapred.JobClient: HDFS: Number of bytes read=87
+15/10/19 12:10:01 INFO mapred.JobClient: HDFS: Number of bytes written=61
+15/10/19 12:10:01 INFO mapred.JobClient: HDFS: Number of read operations=1
+15/10/19 12:10:01 INFO mapred.JobClient: HDFS: Number of large read operations=0
+15/10/19 12:10:01 INFO mapred.JobClient: HDFS: Number of write operations=1
+15/10/19 12:10:01 INFO mapred.JobClient: Job Counters
+15/10/19 12:10:01 INFO mapred.JobClient: Launched map tasks=1
+15/10/19 12:10:01 INFO mapred.JobClient: Total time spent by all maps in occupied slots (ms)=22704
+15/10/19 12:10:01 INFO mapred.JobClient: Total time spent by all reduces in occupied slots (ms)=0
+15/10/19 12:10:01 INFO mapred.JobClient: Total time spent by all maps waiting after reserving slots (ms)=0
+15/10/19 12:10:01 INFO mapred.JobClient: Total time spent by all reduces waiting after reserving slots (ms)=0
+15/10/19 12:10:01 INFO mapred.JobClient: Map-Reduce Framework
+15/10/19 12:10:01 INFO mapred.JobClient: Map input records=3
+15/10/19 12:10:01 INFO mapred.JobClient: Map output records=3
+15/10/19 12:10:01 INFO mapred.JobClient: Input split bytes=87
+15/10/19 12:10:01 INFO mapred.JobClient: Spilled Records=0
+15/10/19 12:10:01 INFO mapred.JobClient: CPU time spent (ms)=920
+15/10/19 12:10:01 INFO mapred.JobClient: Physical memory (bytes) snapshot=105619456
+15/10/19 12:10:01 INFO mapred.JobClient: Virtual memory (bytes) snapshot=730689536
+15/10/19 12:10:01 INFO mapred.JobClient: Total committed heap usage (bytes)=60817408
+15/10/19 12:10:01 INFO mapreduce.ImportJobBase: Transferred 61 bytes in 32.898 seconds (1.8542 bytes/sec)
+15/10/19 12:10:01 INFO mapreduce.ImportJobBase: Retrieved 3 records.
+[root@snn2 ~]#
+[root@snn2 ~]# hadoop fs -ls -R studentDetail
+ls: `studentDetail': No such file or directory
+[root@snn2 ~]#
+[root@snn2 ~]#
+[root@snn2 ~]# hadoop fs -ls /user
+Found 3 items
+drwxr-xr-x - aparna supergroup 0 2015-10-04 10:41 /user/aparna
+drwxr-xr-x - hdfs supergroup 0 2015-10-19 12:09 /user/hdfs
+drwxr-xr-x - hdfs supergroup 0 2015-10-04 11:23 /user/hive
+[root@snn2 ~]#
+[root@snn2 ~]# hadoop fs -ls -R /user/hdfs
+drwxr-xr-x - hdfs supergroup 0 2015-10-19 12:10 /user/hdfs/studentDetail
+-rw-r--r-- 1 hdfs supergroup 0 2015-10-19 12:10 /user/hdfs/studentDetail/_SUCCESS
+drwxr-xr-x - hdfs supergroup 0 2015-10-19 12:09 /user/hdfs/studentDetail/_logs
+drwxr-xr-x - hdfs supergroup 0 2015-10-19 12:09 /user/hdfs/studentDetail/_logs/history
+-rw-r--r-- 1 hdfs supergroup 12535 2015-10-19 12:10 /user/hdfs/studentDetail/_logs/history/job_201510190012_0001_1445281773090_hdfs_studentDetail.jar
+-rw-r--r-- 1 hdfs supergroup 92526 2015-10-19 12:09 /user/hdfs/studentDetail/_logs/history/job_201510190012_0001_conf.xml
+-rw-r--r-- 1 hdfs supergroup 61 2015-10-19 12:09 /user/hdfs/studentDetail/part-m-00000
+
+[root@snn2 ~]# hadoop fs -cat /user/hdfs/studentDetail/part-m-00000
+1,suvarna,sunnyvale
+2,Apurva,sunnyvale
+3,Anushka,santa clara
+[root@snn2 ~]#
+
+[root@snn2 sqoop]# sudo -su hdfs sqoop import --connect jdbc:mysql://hiveserver2-metastore.mydomain.net/studentInfo --username sqoop --password sqoop --table studeDetail --m 1 --target-dir /queryresult
+
+[root@snn2 sqoop]# hadoop fs -ls /query*
+Found 3 items
+-rw-r--r-- 1 hdfs supergroup 0 2015-10-19 13:22 /queryresult/_SUCCESS
+drwxr-xr-x - hdfs supergroup 0 2015-10-19 13:22 /queryresult/_logs
+-rw-r--r-- 1 hdfs supergroup 61 2015-10-19 13:22 /queryresult/part-m-00000
+[root@snn2 sqoop]#
+
+[root@snn2 sqoop]# sudo -su hdfs sqoop import --connect jdbc:mysql://hiveserver2-metastore.mydomain.net/studentInfo --username sqoop --password sqoop --table studentDetail --where "stId>2" --m 1 --target-dir /queryresult/wherequery
+
+[root@snn2 sqoop]# hadoop fs -cat /queryresult/wherequery/part-m-00000
+3,Anushka,santa clara
+[root@snn2 sqoop]#
+
+Suppose we have added two rows in original mysql table and we want to get only two recent rows
+Incremental Append:
+[root@snn2 sqoop]# sudo -su hdfs sqoop import --connect jdbc:mysql://hiveserver2-metastore.mydomain.net/studentInfo --username sqoop --password sqoop --table student Detail --incremental append --check-column stId --last-value 3 --m 1 --target-dir /queryresult/
+
+15/10/19 13:53:55 INFO mapreduce.ImportJobBase: Retrieved 2 records.
+15/10/19 13:53:55 INFO util.AppendUtils: Appending to directory queryresult
+15/10/19 13:53:55 INFO util.AppendUtils: Using found partition 1
+15/10/19 13:53:55 INFO tool.ImportTool: Incremental import complete! To run another incremental import of all data following this import, supply the following arguments:
+15/10/19 13:53:55 INFO tool.ImportTool: --incremental append
+15/10/19 13:53:55 INFO tool.ImportTool: --check-column stId
+15/10/19 13:53:55 INFO tool.ImportTool: --last-value 5
+15/10/19 13:53:55 INFO tool.ImportTool: (Consider saving this with 'sqoop job --create')
+[root@snn2 sqoop]#
+[root@snn2 sqoop]#
+
+[root@snn2 sqoop]# hadoop fs -cat /queryresult/part-m-00001
+4,Ansh,freemont
+5,Raghav,Mountain View
+[root@snn2 sqoop]#
+
+ Import all rows of a table from MySQL, but specific columns of the table
+Query: $ sqoop import --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --table tablename --columns "columnName" --target-dir selectedCol -m 1
+
+Import MySQL data into HDFS in various binary file format
+Sequence File Query: $ sqoop import --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --table tablename --as-sequencefile -m 1
+Avro File Query: $ sqoop import --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --table tablename --as-avrodatafile -m 1
+
+ Import all tables of a MySQL database into HDFS
+Query: $ sqoop import-all-tables --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ -m 1
+
+ Exclude some tables
+Query: $ sqoop import-all-tables --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --exclude-tables table1, table2 -m 1
+
+ Gzip compression
+Query: $ sqoop import-all-tables --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --compress -m 1
+
+Sqoop Export Command –
+Query: $ sqoop export --connect jdbc:mysql://localhost/databasename --username $USER_NAME$ --password $PASSWORD$ --table tablename -m 1 --export-dir targetDirName 
+This example takes the files from the targetDirName and injects their contents into the “tablename” table in the “databasename” database. The target table must already exist in the database.
+Different Connection Strings for Different RDBMS –
+
+Database Connection String
+HSQLDB jdbc:hsqldb:*//
+MySQL jdbc:mysql://
+Oracle jdbc:oracle:*//
+PostgreSQL jdbc:postgresql://
+Common Problems –
+
+Problem 1: Sqoop is treating TINYINT(1) columns as booleans, which is for example causing issues with HIVE import. This is because by default the MySQL JDBC connector maps the TINYINT(1) to java.sql.Types.BIT, which Sqoop by default maps to Boolean.
+Solution: A more clean solution is to force MySQL JDBC Connector to stop converting TINYINT(1) to java.sql.Types.BIT by adding tinyInt1isBit=false into your JDBC path (to create something like jdbc:mysql://localhost/test?tinyInt1isBit=false). Another solution would be to explicitly override the column mapping for the datatype TINYINT(1) column
+
+Problem 2: You are using direct import from MySQL into Hive. You’ve noticed that the Hive shell correctly displays NULL values as the string NULL; however, you are not able to select
+those rows using the IS NULL condition in queries.
+Solution: You need to disable direct import and use the JDBC method by omitting the --direct
+parameter, so that you can instruct Sqoop to use Hive-specific NULL substitution strings.
+For example:
+sqoop import \
+--connect jdbc:mysql://mysql.com/sqoop \
+--username sqoop \
+--password sqoop \
+--table cities \
+--hive-import \
+--null-string '\\N' \
+--null-non-string '\\N'
+
+Problem 3: Runtime Exception
+java.lang.RuntimeException: Could not load db driver class: com.mysql.jdbc.Driver
+at org.apache.sqoop.manager.SqlManager.makeConnection(SqlManager.java:848)
+at org.apache.sqoop.manager.GenericJdbcManager.getConnection(GenericJdbcManager.java:52)
+at org.apache.sqoop.manager.SqlManager.execute(SqlManager.java:736)
+at org.apache.sqoop.manager.SqlManager.execute(SqlManager.java:759)
+at org.apache.sqoop.manager.SqlManager.getColumnInfoForRawQuery(SqlManager.java:269)
+at org.apache.sqoop.manager.SqlManager.getColumnTypesForRawQuery(SqlManager.java:240)
+at org.apache.sqoop.manager.SqlManager.getColumnTypes(SqlManager.java:226)
+at org.apache.sqoop.manager.ConnManager.getColumnTypes(ConnManager.java:295)
+at org.apache.sqoop.orm.ClassWriter.getColumnTypes(ClassWriter.java:1773)
+at org.apache.sqoop.orm.ClassWriter.generate(ClassWriter.java:1578)
+at org.apache.sqoop.tool.CodeGenTool.generateORM(CodeGenTool.java:96)
+at org.apache.sqoop.tool.ImportTool.importTable(ImportTool.java:478)
+at org.apache.sqoop.tool.ImportTool.run(ImportTool.java:601)
+at org.apache.sqoop.Sqoop.run(Sqoop.java:143)
+at org.apache.hadoop.util.ToolRunner.run(ToolRunner.java:70)
+at org.apache.sqoop.Sqoop.runSqoop(Sqoop.java:179)
+at org.apache.sqoop.Sqoop.runTool(Sqoop.java:218)
+at org.apache.sqoop.Sqoop.runTool(Sqoop.java:227)
+at org.apache.sqoop.Sqoop.main(Sqoop.java:236)
+Solution: MySQL Connector is missing. Download the connector and place it into the sqoop directory.

@@ -1,0 +1,370 @@
+DROP DATABASE hivetemp CASCADE;
+
+CREATE DATABASE hivetemp;
+
+hive> DESCRIBE DATABASE hivetemp;
+OK
+
+ALTER DATABASE hivetemp SET DBPROPERTIES ('creator' = 'am', 'date' = '2014-06-03');
+
+hive> DESCRIBE DATABASE EXTENDED hivetemp;
+OK
+
+
+hadoop fs -ls input/hive-nyse
+hadoop fs -mkdir input/hive-nyse
+hadoop fs -copyFromLocal /workshop/input/nyse/NYSE_daily_comma input/hive-nyse
+ 
+USE hivetemp;
+
+###CREATE TABLE###
+
+CREATE TABLE IF NOT EXISTS stocks (
+exch STRING,
+symbol STRING,
+ymd STRING,
+price_open FLOAT,
+price_high FLOAT,
+price_low FLOAT,
+price_close FLOAT,
+volume INT,
+price_adj_close FLOAT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+DESCRIBE stocks;
+
+DESCRIBE hivetemp.stocks;
+
+DESCRIBE EXTENDED hivetemp.stocks;
+
+DESCRIBE FORMATTED hivetemp.stocks;
+
+hadoop fs -ls /user/hive/warehouse
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks
+
+SELECT * FROM stocks;
+
+## LOADING TABLE ###
+--substitute your username
+LOAD DATA INPATH '/user/aparna/input/hive-nyse'
+INTO TABLE stocks;
+
+SELECT * FROM stocks;
+
+hadoop fs -ls input/hive-nyse
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks
+
+###EXTERNAL TABLE###
+
+CREATE EXTERNAL TABLE IF NOT EXISTS stocks_ext (
+exch STRING,
+symbol STRING,
+ymd STRING,
+price_open FLOAT,
+price_high FLOAT,
+price_low FLOAT,
+price_close FLOAT,
+volume INT,
+price_adj_close FLOAT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+INSERT INTO TABLE stocks_ext
+SELECT * FROM stocks s;
+
+ALTER TABLE stocks_ext RENAME TO stocks_external;
+
+ALTER TABLE stocks_external ADD COLUMNS (
+createdBy STRING COMMENT 'Created By',
+ModifiedBy STRING COMMENT 'Modified By');
+
+ALTER TABLE stocks_external REPLACE COLUMNS (
+exch_name STRING COMMENT 'exch Name',
+symbol_name STRING COMMENT 'Symbol Name');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS stocks_ext_2 (
+exch STRING,
+symbol STRING,
+ymd STRING,
+price_open FLOAT,
+price_high FLOAT,
+price_low FLOAT,
+price_close FLOAT,
+volume INT,
+price_adj_close FLOAT)
+COMMENT 'Test table to show properties'
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION '/tmp/aparna/hive-stocks-ext'
+TBLPROPERTIES ('creator'='am', 'created_at'='2014-01-02 10:00:00');
+
+DESCRIBE FORMATTED stocks_ext_2;
+
+ALTER TABLE stocks_ext_2 SET TBLPROPERTIES (
+'creator' = 'aparna');
+
+DROP TABLE stocks_ext_2;
+
+--Difference between MANAGED & EXTERNAL table
+
+SELECT * FROM stocks;
+SELECT * FROM stocks_external;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+
+DROP table stocks;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+
+DROP table stocks_external;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+
+### PARTITIONS ###
+
+CREATE TABLE IF NOT EXISTS stocks_partition (
+exch STRING,
+symbol STRING,
+ymd STRING,
+price_open FLOAT,
+price_high FLOAT,
+price_low FLOAT,
+price_close FLOAT,
+volume INT,
+price_adj_close FLOAT)
+PARTITIONED BY (sym STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+SELECT * FROM stocks_partition;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+ 
+hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks_partition
+
+--Individual Inserts
+INSERT OVERWRITE TABLE stocks_partition
+PARTITION (sym = 'CLI')
+SELECT * FROM stocks s
+WHERE s.symbol = 'CLI';
+
+INSERT OVERWRITE TABLE stocks_partition
+PARTITION (sym = 'CSL')
+SELECT * FROM stocks s
+WHERE s.symbol = 'CSL';
+
+hive> SHOW PARTITIONS stocks_partition;
+OK
+sym=CLI
+sym=CSL
+Time taken: 0.102 seconds, Fetched: 2 row(s)
+
+
+hadoop fs -copyFromLocal /workshop/input/nyse/NYSE_daily_comma_CBZ input/hive-nyse
+
+--ALTER ADD
+ALTER TABLE stocks_partition ADD IF NOT EXISTS
+PARTITION (sym = 'CBZ') LOCATION '/user/aparna/input/hive-nyse';
+
+SELECT * FROM stocks_partition
+WHERE sym = 'CSL';
+
+
+--Multiple inserts in one query
+FROM stocks s
+INSERT OVERWRITE TABLE stocks_partition
+PARTITION (sym = 'CMP')
+SELECT * WHERE s.symbol = 'CMP'
+INSERT OVERWRITE TABLE stocks_partition
+PARTITION (sym = 'CVH')
+SELECT * WHERE s.symbol = 'CVH';
+
+
+hive> SHOW PARTITIONS stocks_partition;
+OK
+sym=CBZ
+sym=CLI
+sym=CMP
+sym=CSL
+sym=CVH
+Time taken: 1.127 seconds, Fetched: 5 row(s)
+
+
+emily.ragland@ip-172-31-43-222:~$ hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks_partition
+Warning: $HADOOP_HOME is deprecated.
+
+Found 4 items
+drwxr-xr-x   - emily.ragland supergroup          0 2014-07-30 03:36 /user/hive/warehouse/hivetemp.db/stocks_partition/sym=CLI
+drwxr-xr-x   - emily.ragland supergroup          0 2014-07-30 03:44 /user/hive/warehouse/hivetemp.db/stocks_partition/sym=CMP
+drwxr-xr-x   - emily.ragland supergroup          0 2014-07-30 03:37 /user/hive/warehouse/hivetemp.db/stocks_partition/sym=CSL
+drwxr-xr-x   - emily.ragland supergroup          0 2014-07-30 03:44 /user/hive/warehouse/hivetemp.db/stocks_partition/sym=CVH
+
+
+
+SELECT * FROM stocks_partition
+WHERE sym = 'CVH';
+
+ALTER TABLE stocks_partition DROP IF EXISTS PARTITION(sym = 'CVH');
+
+hive> SHOW PARTITIONS stocks_partition;
+OK
+sym=CLI
+sym=CMP
+sym=CSL
+sym=CVH
+Time taken: 0.266 seconds, Fetched: 4 row(s)
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks_partition
+
+
+hive> DESCRIBE FORMATTED stocks_partition;
+
+SELECT * FROM stocks_partition;
+
+###DYNAMIC PARTITIONS###
+
+CREATE TABLE IF NOT EXISTS stocks_dynamic_partition (
+exch STRING,
+symbol STRING,
+ymd STRING,
+price_open FLOAT,
+price_high FLOAT,
+price_low FLOAT,
+price_close FLOAT,
+volume INT,
+price_adj_close FLOAT)
+PARTITIONED BY (exch_pt STRING, sym STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+INSERT OVERWRITE TABLE stocks_dynamic_partition
+PARTITION (exch_pt, sym)
+SELECT *, s.exch, s.symbol
+FROM stocks s;
+
+FAILED: SemanticException [Error 10096]: Dynamic partition strict mode requires at least one static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db/stocks_dynamic_partition/exch_pt=NYSE
+
+SELECT * FROM stocks_dynamic_partition
+WHERE exch_pt='NYSE' and sym='CVH';
+
+set hive.exec.dynamic.partition.mode=strict;
+
+INSERT OVERWRITE TABLE stocks_dynamic_partition
+PARTITION (exch_pt='NYSE', sym)
+SELECT *, s.symbol
+FROM stocks s;
+
+###QUERIES###
+
+FROM (
+SELECT * FROM stocks
+where symbol='CBZ'
+) e
+SELECT e.exch, e.price_open, e.price_close, e.volume
+WHERE e.volume > 300000;
+
+SELECT exch, price_open, price_close,
+CASE
+ WHEN volume < 200000 THEN 'low'
+ WHEN volume >= 200000 AND volume < 400000 THEN 'middle'
+ WHEN volume >= 400000 AND volume < 600000 THEN 'high'
+ ELSE 'very high'
+END AS volume_level FROM stocks;
+
+SELECT * FROM stocks
+where exch LIKE 'NY%' and symbol RLIKE 'C.L';
+
+SELECT exch, symbol, COUNT(1) FROM stocks
+GROUP BY exch, symbol;
+
+SELECT year(ymd), symbol, avg(price_close) FROM stocks
+GROUP BY year(ymd), symbol
+HAVING avg(price_close) > 30;
+
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks s
+ORDER BY s.ymd ASC, s.symbol DESC;
+
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks s
+SORT BY s.ymd ASC, s.symbol DESC;
+
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks s
+DISTRIBUTE BY s.symbol
+SORT BY s.symbol ASC, s.ymd ASC;
+
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks s
+DISTRIBUTE BY s.symbol
+SORT BY s.symbol ASC;
+
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks s
+CLUSTER BY s.symbol;
+
+--UNION ALL
+SELECT col1, col2 from table1
+UNION ALL
+SELECT col1, col2 from table2;
+
+SELECT DISTINCT exch, symbol FROM stocks;
+
+SELECT * FROM stocks
+LIMIT 10;
+
+### JOIN ###
+
+hadoop fs -ls input/hive_dividends
+hadoop fs -mkdir input/hive_dividends
+hadoop fs -copyFromLocal /workshop/input/nyse/NYSE_dividends_comma input/hive_dividends
+
+CREATE EXTERNAL TABLE IF NOT EXISTS dividends (
+exch STRING,
+symbol STRING,
+ymd STRING,
+dividend FLOAT
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION '/tmp/aparna/hive/dividends';
+
+SELECT * FROM dividends;
+
+hadoop fs -ls /user/hive/warehouse/hivetemp.db
+hadoop fs -ls input/hive_dividends
+
+LOAD DATA INPATH '/user/aparna/input/hive_dividends'
+INTO TABLE dividends;
+
+SELECT s.exch, s.symbol, s.ymd, s.price_close, d.dividend
+FROM stocks_partition s INNER JOIN dividends d 
+ON s.symbol = d.symbol AND s.ymd = d.ymd;
+
+NYSE    CSL     2009-08-12      32.54   0.16
+Time taken: 49.487 seconds, Fetched: 1 row(s)
+
+SELECT s.exch, s.symbol, s.ymd, s.price_close, d.dividend
+FROM stocks_partition s LEFT OUTER JOIN dividends d 
+ON s.symbol = d.symbol AND s.ymd = d.ymd;
+
+SELECT s.exch, s.symbol, s.ymd, s.price_close, d.dividend
+FROM stocks_partition s LEFT OUTER JOIN dividends d 
+ON s.symbol = d.symbol AND s.ymd = d.ymd
+WHERE d.dividend IS NOT NULL;
+
+SELECT s.exch, s.symbol, s.ymd, s.price_close, d.dividend
+FROM stocks_partition s RIGHT OUTER JOIN dividends d 
+ON s.symbol = d.symbol AND s.ymd = d.ymd;
+
+SELECT s.exch, s.symbol, s.ymd, s.price_close, d.dividend
+FROM stocks_partition s FULL OUTER JOIN dividends d 
+ON s.symbol = d.symbol AND s.ymd = d.ymd;
+	
+SELECT s.ymd, s.symbol, s.price_close
+FROM stocks_partition s LEFT SEMI JOIN dividends d 
+ON s.ymd = d.ymd AND s.symbol = d.symbol;
+
+
+DROP DATABASE IF EXISTS hivetemp CASCADE;
