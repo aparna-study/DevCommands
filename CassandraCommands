@@ -1,0 +1,281 @@
+cqlsh> USE test
+... ;
+cqlsh:test>
+cqlsh:test> create table stud_result(
+... result Boolean,
+... stud_id int PRIMARY KEY(result,stud_id));
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 3:23 mismatched input '(' expecting ')' (...Boolean,stud_id int PRIMARY KEY[(]result...)">
+cqlsh:test> create table stud_result(
+... result Boolean,
+... stud_id int ,
+... PRIMARY KEY(result,stud_id));
+cqlsh:test> select * from st_marks;
+
+stud_id | class | marks | result
+---------+-------+------------------+--------
+1 | SE | [12, 30, 1, 2] | False
+2 | SE | [12, 34, 1, 2] | False
+3 | SE | [70, 85, 71, 99] | True
+
+(3 rows)
+cqlsh:test>
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,1);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,2);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,4);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(true,3);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(true,5);
+cqlsh:test>
+cqlsh:test> create table stud_result(
+... result Boolean,
+... stud_id int PRIMARY KEY(result,stud_id));
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 3:23 mismatched input '(' expecting ')' (...Boolean,stud_id int PRIMARY KEY[(]result...)">
+cqlsh:test> create table stud_result(
+... result Boolean,
+... stud_id int ,
+... PRIMARY KEY(result,stud_id));
+cqlsh:test> select * from st_marks;
+
+stud_id | class | marks | result
+---------+-------+------------------+--------
+1 | SE | [12, 30, 1, 2] | False
+2 | SE | [12, 34, 1, 2] | False
+3 | SE | [70, 85, 71, 99] | True
+
+(3 rows)
+cqlsh:test>
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,1);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,2);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(false,4);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(true,3);
+cqlsh:test> INSERT INTO stud_result (result,stud_id) VALUES(true,5);
+cqlsh:test>
+cqlsh:test> DESC st_marks
+
+CREATE TABLE test.st_marks (
+stud_id int PRIMARY KEY,
+class text,
+marks list<int>,
+result boolean
+) WITH bloom_filter_fp_chance = 0.01
+AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+AND comment = ''
+AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+AND dclocal_read_repair_chance = 0.1
+AND default_time_to_live = 0
+AND gc_grace_seconds = 864000
+AND max_index_interval = 2048
+AND memtable_flush_period_in_ms = 0
+AND min_index_interval = 128
+AND read_repair_chance = 0.0
+AND speculative_retry = '99.0PERCENTILE';
+
+cqlsh:test> DESC stud_result;
+
+CREATE TABLE test.stud_result (
+result boolean,
+stud_id int,
+PRIMARY KEY (result, stud_id)
+) WITH CLUSTERING ORDER BY (stud_id ASC)
+AND bloom_filter_fp_chance = 0.01
+AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+AND comment = ''
+AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+AND dclocal_read_repair_chance = 0.1
+AND default_time_to_live = 0
+AND gc_grace_seconds = 864000
+AND max_index_interval = 2048
+AND memtable_flush_period_in_ms = 0
+AND min_index_interval = 128
+AND read_repair_chance = 0.0
+AND speculative_retry = '99.0PERCENTILE';
+
+cqlsh:test>
+cqlsh:test> create table three_p_keys(
+... id int,
+... city text,
+... country text,
+... PRIMARY KEY (id,city,country));
+cqlsh:test>
+cqlsh:test> INSERT INTO three_p_keys(id,city,country)
+... VALUES(1,'sunnyvale','US');
+cqlsh:test>
+cqlsh:test> INSERT INTO three_p_keys(id,city,country) VALUES(2,'sunnyvale','US');
+cqlsh:test> INSERT INTO three_p_keys(id,city,country) VALUES(3,'pune','INDIA');
+cqlsh:test> INSERT INTO three_p_keys(id,city,country) VALUES(3,'pune','INDIA');
+cqlsh:test> INSERT INTO three_p_keys(id,city,country) VALUES(4,'santa Clara','US');
+cqlsh:test>
+cqlsh:test> select * from three_p_keys where id in(1,2) and city='sunnyvale';
+
+id | city | country
+----+-----------+---------
+1 | sunnyvale | US
+2 | sunnyvale | US
+
+(2 rows)
+cqlsh:test> select * from three_p_keys where id in(3);
+
+id | city | country
+----+------+---------
+3 | pune | INDIA
+
+(1 rows)
+cqlsh:test> select * from three_p_keys where city='sunnyvale';
+InvalidRequest: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:test>
+cqlsh:test> select * from three_p_keys where city='sunnyvale' allow filtering;
+
+id | city | country
+----+-----------+---------
+1 | sunnyvale | US
+2 | sunnyvale | US
+
+(2 rows)
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... timestamp timestamp,
+... temp int,
+... PRIMARY KEY (((c_id,day)),timestamp));
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 6:14 no viable alternative at input '(' (... int,PRIMARY KEY (([(]...)">
+cqlsh:test>
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... timestamp timestamp,
+... temp int,
+... PRIMARY KEY ((c-id,day)),timestamp);
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 6:16 mismatched input '-' expecting ')' (...int, PRIMARY KEY ((c[-]id...)">
+cqlsh:test>
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... ... timestamp timestamp,
+... ... temp int,
+... ... PRIMARY KEY (
+...
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... timestamp timestamp,
+... temp int,
+... PRIMARY KEY ((c-id,day),timestamp);
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 6:16 mismatched input '-' expecting ')' (...int, PRIMARY KEY ((c[-]id...)">
+cqlsh:test>
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... timestamp timestamp,
+... temp int,
+... PRIMARY KEY ((c-id,day),timestamp)
+... );
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 6:16 mismatched input '-' expecting ')' (...int, PRIMARY KEY ((c[-]id...)">
+cqlsh:test> create table composite_com_key(
+... c_id int,
+... day varchar,
+... timestamp timestamp,
+... temp int,
+... PRIMARY KEY ((c_id,day),timestamp)
+... );
+cqlsh:test>
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,timestamp,temp)
+... VALUES (s1,'16-10-2015',now(),45);
+SyntaxException: <ErrorMessage code=2000 [Syntax error in CQL query] message="line 2:10 no viable alternative at input ',' (...day,timestamp,temp)VALUES ([s1],...)">
+cqlsh:test>
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,timestamp,temp) VALUES (1,'16-10-2015',now(),45);
+InvalidRequest: code=2200 [Invalid query] message="Type error: cannot assign result of function system.now (type timeuuid) to timestamp (type timestamp)"
+cqlsh:test>
+cqlsh:test> ALTER TABLE composite_com_key
+... ALTER timestamp TYPE timeuuid;
+ConfigurationException: <ErrorMessage code=2300 [Query invalid because of configuration issue] message="Cannot change timestamp from type timestamp to type timeuuid: types are not order-compatible.">
+cqlsh:test> DROP TABLE composite_com_key
+... ;
+cqlsh:test>
+cqlsh:test> create table composite_com_key(c_id int, day varchar, time timeuuid, temp int, PRIMARY KEY ((c_id,day), time) );
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(1,'16-10-2015',now(),23);
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(2,'16-10-2015',now(),43);
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(1,'16-10-2015',now(),83);
+cqlsh:test>
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(2,'16-10-2015',now(),92);
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(3,'16-10-2015',now(),99);
+cqlsh:test> INSERT INTO composite_com_key(c_id,day,time,temp) VALUES(1,'16-10-2015',now(),9);
+cqlsh:test> select * from composite_com_key where id=1 and day='16-10-2015';
+InvalidRequest: code=2200 [Invalid query] message="Undefined name id in where clause ('id = 1')"
+cqlsh:test>
+cqlsh:test> select * from composite_com_key where c_id=1 and day='16-10-2015';
+
+c_id | day | time | temp
+------+------------+--------------------------------------+------
+1 | 16-10-2015 | a2922d80-7476-11e5-a437-233f1f0a95ab | 23
+1 | 16-10-2015 | ae165410-7476-11e5-a437-233f1f0a95ab | 83
+1 | 16-10-2015 | bf46a870-7476-11e5-a437-233f1f0a95ab | 9
+
+(3 rows)
+cqlsh:test> select * from composite_com_key where c_id=1 ;
+InvalidRequest: code=2200 [Invalid query] message="Partition key parts: day must be restricted as other parts are"
+cqlsh:test>
+cqlsh:test> select * from composite_com_key where c_id=2 and day='16-10-2015';
+
+c_id | day | time | temp
+------+------------+--------------------------------------+------
+2 | 16-10-2015 | a79dfca0-7476-11e5-a437-233f1f0a95ab | 43
+2 | 16-10-2015 | b441c400-7476-11e5-a437-233f1f0a95ab | 92
+
+After creating three node cluster :
+[root@snn2 ~]# nodetool status
+Datacenter: datacenter1
+=======================
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+-- Address Load Tokens Owns Host ID Rack
+UN 192.168.1.164 2.97 MB 256 ? cf7edb7e-3861-45ee-8257-d64bced00f76 rack1
+UN 192.168.1.165 1.7 MB 256 ? f2adf886-8170-4fbc-ae2b-2cbf582d9793 rack1
+UN 192.168.1.168 3.08 MB 256 ? 052ac5b4-dc64-4606-82c3-b502245ee3e7 rack1
+
+Note: Non-system keyspaces don't have the same replication settings, effective ownership information is meaningless
+[root@snn2 ~]#
+[root@snn2 ~]# nodetool status test
+Datacenter: datacenter1
+=======================
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+-- Address Load Tokens Owns (effective) Host ID Rack
+UN 192.168.1.164 2.97 MB 256 67.7% cf7edb7e-3861-45ee-8257-d64bced00f76 rack1
+UN 192.168.1.165 1.7 MB 256 67.0% f2adf886-8170-4fbc-ae2b-2cbf582d9793 rack1
+UN 192.168.1.168 3.08 MB 256 65.3% 052ac5b4-dc64-4606-82c3-b502245ee3e7 rack1
+
+[root@snn2 ~]# nodetool status test2
+Datacenter: datacenter1
+=======================
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+-- Address Load Tokens Owns (effective) Host ID Rack
+UN 192.168.1.164 2.97 MB 256 33.1% cf7edb7e-3861-45ee-8257-d64bced00f76 rack1
+UN 192.168.1.165 1.7 MB 256 33.4% f2adf886-8170-4fbc-ae2b-2cbf582d9793 rack1
+UN 192.168.1.168 3.08 MB 256 33.5% 052ac5b4-dc64-4606-82c3-b502245ee3e7 rack1
+
+[root@snn2 ~]#
+[root@snn2 ~]# nodetool status test
+Datacenter: datacenter1
+=======================
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+-- Address Load Tokens Owns (effective) Host ID Rack
+UN 192.168.1.164 2.97 MB 256 67.7% cf7edb7e-3861-45ee-8257-d64bced00f76 rack1
+UN 192.168.1.165 1.7 MB 256 67.0% f2adf886-8170-4fbc-ae2b-2cbf582d9793 rack1
+UN 192.168.1.168 3.08 MB 256 65.3% 052ac5b4-dc64-4606-82c3-b502245ee3e7 rack1
+
+[root@snn2 ~]#
+[root@snn2 ~]# nodetool status demodb;
+Datacenter: datacenter1
+=======================
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+-- Address Load Tokens Owns (effective) Host ID Rack
+UN 192.168.1.164 2.97 MB 256 100.0% cf7edb7e-3861-45ee-8257-d64bced00f76 rack1
+UN 192.168.1.165 1.7 MB 256 100.0% f2adf886-8170-4fbc-ae2b-2cbf582d9793 rack1
+UN 192.168.1.168 3.07 MB 256 100.0% 052ac5b4-dc64-4606-82c3-b502245ee3e7 rack1
+
+[root@snn2 ~]# nodetool repair
+
