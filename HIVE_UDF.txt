@@ -1,0 +1,53 @@
+Dataset
+
+Frank Black, 1001, frankdaman@eng.example.com, -72710640
+Jolie Guerms, 1006, jguerms@ga.example.com, 1262365200
+Mossad Ali, 1001, mali@eng.example.com, 1207818032
+Chaka Kaan, 1006, ckhan@ga.example.com, 1130758322
+Verner von Kraus, 1007, verner@example.com, 1341646585
+Lester Dooley, 1001, ldooley@eng.example.com, 1300109650
+
+1] CARETE TABLE IN HIVE
+
+hive> CREATE TABLE sample_dataset (
+name STRING,
+some_number STRING,
+email STRING,
+unixtime STRING
+)ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+
+2] LOAD DATA INTO TABLE
+
+LOAD DATA LOCAL INPATH '/root/sample.txt' INTO TABLE sample_dataset ;
+
+3] CREATE UDF
+
+package com.myudfs.hive.udf;   //define location to store work
+
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.io.Text;
+import java.sql.Date;
+
+public class subStValueToPartition extends UDF{
+	  public Text evaluate(String unix_timestamp) throws ParseException {    
+		     Date date = new Date (0);
+		     long unixtimestamp = Long.parseLong(unix_timestamp);
+		    date.setTime((long)unixtimestamp *1000);
+		    return new Text(date.toString());
+		}
+}
+
+
+4] COMPILE UDF AND CREATE JAR --I have used maven to build jar
+
+From hive shell , add jar to Hive
+
+5] add jar unix_to_date.jar
+
+Register Jar
+6] CREATE TEMPORARY FUNCTION unix_to_date AS 'com.myudfs.hive.udf.unix_to_date'
+
+Execute Function
+7] SELECT name,unix_to_date(unixtime) from sample_dataset;
