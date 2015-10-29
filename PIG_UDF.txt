@@ -1,0 +1,92 @@
+PigUDF
+====================================
+Filter:-- Generate true or false i.e. boolean values depending upon wheather these points are at specific distance
+Table-genrating Functions: --take dataset -perform sequential analysis on dataset and then save data
+Aggregate:
+===========================================================
+User Contributed: e.g DataFu library by Linkedin
+Custom UDFs
+Builtin UDFS: come with pig do not need to be declare register e.g. piggibank
+============================================================
+UDF names are case sensitive, Keywords are not 
+Running pig UDF:  can be local mode, distributed mode
+Invoking pig:   interactive using Grunt shell, embedded program, Script file
+============================================================
+set environment variables needed to for pig
+PIG_HOME. HADOOP_HOME, JAVA_HOME, CLASSPATH for pig libraries
+==========================================================
+Suppose you have Dataset and you are interested in finding celebs having follower count more than some number lets 
+say 100000 and latestMovieReleaseYear 2015
+
+CelebrityName, hobbies, followerCount, day, noOfposts, latestMovieReleaseYear
+
+Then we may write some similar UDF 
+
+package myUDF;
+
+import java.io.IOException;
+import org.apache.pig.FilterFunc;
+import org.apache.pig.data.Tuple;
+
+public class CelebFollowerCount extends FilterFunc {
+	public Boolean exec(Tuple tuple) throws IOException{
+		if(tuple==null||tuple.size()==0){
+			return null;
+		}
+		try{
+			Object followerCount= tuple.get(0);
+			if(followerCount instanceof Long){
+			return (((Long)followerCount).longValue() > 100000);
+			}else{				
+			return false;
+			}
+		}
+		catch(Exception ex){
+			throw new IOException("Error");
+		}
+	}
+}
+
+
+package myUDF;
+
+import java.io.IOException;
+import java.util.Calendar;
+
+import org.apache.pig.FilterFunc;
+import org.apache.pig.data.Tuple;
+
+public class ReleaseYear extends FilterFunc {
+	public Boolean exec(Tuple tuple) throws IOException {
+		boolean result = false;
+		if (tuple == null || tuple.size() == 0) {
+			return false;
+		}
+		
+		Object relaseYear = tuple.get(0);
+		long timestamp = System.currentTimeMillis();
+		Calendar rightNow = Calendar.getInstance();
+		int year = rightNow.get(Calendar.YEAR);
+		if (relaseYear instanceof Integer && ((Integer) relaseYear).intValue() == year) {
+			result = true;
+		}
+		return result;
+	}
+
+}
+
+
+Compile and Create Jar I have used Maven for this.
+
+Register you jar to identify namespace of UDF
+REGESTER 'com/practice/pig/myUDF.jar';
+
+Write pig script first load dataset
+celebs= LOAD 'celebs.csv' using PigStorage (',') AS (CelebrityName:chararray , hobbies:chararray, followerCount:long , day:datetime , noOfposts:long , latestMovieReleaseYear:int);
+
+Now call your custom UDFs it'll give us tuples which evaluate to true by both the functions
+result= FILTER celebs by myUDFS.CelebFollowerCount(followerCount), myUDF.ReleaseYear(latestMovieReleaseYear);
+
+DUPM result;
+
+
