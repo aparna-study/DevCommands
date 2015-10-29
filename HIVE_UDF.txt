@@ -34,7 +34,7 @@ public class subStValueToPartition extends UDF{
 	  public Text evaluate(String unix_timestamp) throws ParseException {    
 		     Date date = new Date (0);
 		     long unixtimestamp = Long.parseLong(unix_timestamp);
-		    date.setTime((long)unixtimestamp *1000);
+		    date.setTime(unixtimestamp *1000);
 		    return new Text(date.toString());
 		}
 }
