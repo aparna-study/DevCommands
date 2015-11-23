@@ -33,8 +33,8 @@ public class DriverClass extends Configured implements Tool{
 		job.setMapOutputKeyClass(StudentIDKey.class);
 		job.setMapOutputValueClass(JoinGenericWritable.class);
 		
-		MultipleInputs.addInputPath(job, new Path(args[0]), TextInputFormat.class, StudentAddressMapper.class);
-	    MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat.class, StudentAcademicMapper.class);
+		MultipleInputs.addInputPath(job, new Path(args[0]), TextInputFormat, StudentAddressMapper.class);
+	    MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat, StudentAcademicMapper.class);
 	                              
 	    job.setReducerClass(JoinReducer.class);
 	                         
